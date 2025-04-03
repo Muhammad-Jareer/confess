@@ -41,20 +41,12 @@ const Header = () => {
             </Link>
             
             {isAuthenticated && (
-              <>
-                <Link 
-                  to="/new" 
-                  className="text-gray-700 dark:text-gray-300 hover:text-confess-orange dark:hover:text-confess-pink font-medium"
-                >
-                  New Thread
-                </Link>
-                <Link 
-                  to={`/profile/${currentUser.id}`} 
-                  className="text-gray-700 dark:text-gray-300 hover:text-confess-orange dark:hover:text-confess-pink font-medium"
-                >
-                  My Profile
-                </Link>
-              </>
+              <Link 
+                to="/new" 
+                className="text-gray-700 dark:text-gray-300 hover:text-confess-orange dark:hover:text-confess-pink font-medium"
+              >
+                New Thread
+              </Link>
             )}
             
             <button 
@@ -132,24 +124,14 @@ const Header = () => {
             </Link>
             
             {isAuthenticated && (
-              <>
-                <Link 
-                  to="/new" 
-                  className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <MessageSquarePlus size={18} />
-                  <span>New Thread</span>
-                </Link>
-                <Link 
-                  to={`/profile/${currentUser.id}`} 
-                  className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <User size={18} />
-                  <span>My Profile</span>
-                </Link>
-              </>
+              <Link 
+                to="/new" 
+                className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <MessageSquarePlus size={18} />
+                <span>New Thread</span>
+              </Link>
             )}
             
             <div className="flex justify-between items-center px-4 py-2">
@@ -177,14 +159,18 @@ const Header = () => {
             
             {isAuthenticated ? (
               <div className="px-4 py-2 space-y-4">
-                <div className="flex items-center space-x-2">
+                <Link
+                  to={`/profile/${currentUser.id}`}
+                  className="flex items-center space-x-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   <div className="relative w-8 h-8 bg-confess-orange rounded-full flex items-center justify-center text-white">
                     <span className="text-sm font-medium">{currentUser.avatar}</span>
                   </div>
                   <span className="text-gray-700 dark:text-gray-300 font-medium">
                     {currentUser.username}
                   </span>
-                </div>
+                </Link>
                 <button
                   className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md"
                   onClick={() => {
