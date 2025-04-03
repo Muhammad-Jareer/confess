@@ -6,7 +6,7 @@ import Layout from '@/components/Layout';
 import ThreadCard from '@/components/ThreadCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 
 const Home = () => {
   const { threads } = useThread();
@@ -43,7 +43,7 @@ const Home = () => {
       <section className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-4">Discover Threads</h1>
         <p className="text-gray-600 dark:text-gray-400 text-lg mb-6">
-          Join the conversation by exploring threads or share your thoughts by creating a new thread.
+          Join the conversation by exploring threads or share your thoughts.
         </p>
         
         {/* Search and filters */}
@@ -59,11 +59,6 @@ const Home = () => {
           </div>
           
           <div className="flex gap-2">
-            <Link to="/new" className="confess-btn-primary flex items-center gap-1">
-              <Plus size={16} />
-              <span className="hidden md:inline">New Thread</span>
-            </Link>
-            
             <div className="inline-flex items-center border rounded-md overflow-hidden">
               <Button
                 type="button"
