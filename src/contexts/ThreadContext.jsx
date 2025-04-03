@@ -236,6 +236,44 @@ export const ThreadProvider = ({ children }) => {
     return true;
   };
 
+  // Add edit thread functionality
+  const editThread = (threadId, updates) => {
+    if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to edit threads.",
+      });
+      return false;
+    }
+
+    const thread = threads.find(t => t.id === threadId);
+    
+    if (!thread || thread.userId !== currentUser.id) {
+      toast({
+        variant: "destructive",
+        title: "Permission denied",
+        description: "You can only edit your own threads.",
+      });
+      return false;
+    }
+
+    setThreads(prev => 
+      prev.map(thread => 
+        thread.id === threadId 
+          ? { ...thread, ...updates, updatedAt: new Date().toISOString() } 
+          : thread
+      )
+    );
+    
+    toast({
+      title: "Thread updated",
+      description: "Your thread has been updated successfully.",
+    });
+    
+    return true;
+  };
+
   const voteThread = (threadId, direction) => {
     if (!isAuthenticated) {
       toast({
@@ -330,6 +368,44 @@ export const ThreadProvider = ({ children }) => {
     return true;
   };
 
+  // Add edit comment functionality
+  const editComment = (commentId, content) => {
+    if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to edit comments.",
+      });
+      return false;
+    }
+
+    const comment = comments.find(c => c.id === commentId);
+    
+    if (!comment || comment.userId !== currentUser.id) {
+      toast({
+        variant: "destructive",
+        title: "Permission denied",
+        description: "You can only edit your own comments.",
+      });
+      return false;
+    }
+
+    setComments(prev => 
+      prev.map(comment => 
+        comment.id === commentId 
+          ? { ...comment, content, updatedAt: new Date().toISOString() } 
+          : comment
+      )
+    );
+    
+    toast({
+      title: "Comment updated",
+      description: "Your comment has been updated successfully.",
+    });
+    
+    return true;
+  };
+
   const voteComment = (commentId, direction) => {
     if (!isAuthenticated) {
       toast({
@@ -413,9 +489,11 @@ export const ThreadProvider = ({ children }) => {
       threads,
       comments,
       createThread,
+      editThread,
       voteThread,
       deleteThread,
       createComment,
+      editComment,
       voteComment,
       deleteComment,
       getThreadById,
