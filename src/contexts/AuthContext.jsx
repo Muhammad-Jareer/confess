@@ -1,131 +1,110 @@
-
-import { createContext, useContext, useState, useEffect } from 'react';
-import { toast } from '@/components/ui/use-toast';
+import { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
+import { createUser, signIn, signOutUser, getCurrentUser } from "@/lib/appwrite"; // adjust path as needed
 
 const AuthContext = createContext();
-
-// Mock user data
-const mockUsers = [
-  { id: 1, username: 'johndoe', email: 'john@example.com', password: 'password123', bio: 'Just a regular user', avatar: '1' },
-  { id: 2, username: 'janedoe', email: 'jane@example.com', password: 'password123', bio: 'Love to share thoughts', avatar: '2' },
-];
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for stored user on initial load
+  // On initial load: check if there's a logged-in session and fetch user
   useEffect(() => {
-    const storedUser = localStorage.getItem('confess-user');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+        }
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
   }, []);
 
-  // Store user in localStorage when it changes
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('confess-user', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('confess-user');
-    }
-  }, [currentUser]);
+  const login = async (email, password) => {
+    try {
+      await signIn(email, password);
+      const user = await getCurrentUser();
+      setCurrentUser(user);
 
-  const login = (email, password) => {
-    const user = mockUsers.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-      // Create a copy without the password
-      const { password, ...userWithoutPassword } = user;
-      setCurrentUser(userWithoutPassword);
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
       });
       return true;
-    } else {
+    } catch (err) {
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: "Invalid email or password. Please try again.",
+        description: err.message,
       });
       return false;
     }
   };
 
-  const signup = (username, email, password) => {
-    if (mockUsers.some(u => u.email === email)) {
+  const signup = async (username, email, password) => {
+    try {
+      const user = await createUser(email, password, username);
+      setCurrentUser(user);
+
+      toast({
+        title: "Signup successful",
+        description: `Welcome to Confess, ${username}!`,
+      });
+      return true;
+    } catch (err) {
       toast({
         variant: "destructive",
         title: "Signup failed",
-        description: "Email already exists. Please use another email.",
+        description: err.message,
       });
       return false;
     }
-
-    // Create new user
-    const newUser = { 
-      id: mockUsers.length + 1, 
-      username, 
-      email, 
-      password,
-      bio: `Hi, I'm ${username}!`,
-      avatar: Math.ceil(Math.random() * 5).toString()
-    };
-    
-    mockUsers.push(newUser);
-    
-    // Set current user (without password)
-    const { password: _, ...userWithoutPassword } = newUser;
-    setCurrentUser(userWithoutPassword);
-    
-    toast({
-      title: "Signup successful",
-      description: `Welcome to Confess, ${username}!`,
-    });
-    return true;
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully.",
-    });
+  const logout = async () => {
+    try {
+      await signOutUser();
+      setCurrentUser(null);
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: err.message,
+      });
+    }
   };
 
-  const updateProfile = (updates) => {
-    setCurrentUser(prev => ({
-      ...prev,
-      ...updates
-    }));
-    
+  const updateProfile = async (updates) => {
+    // You can later implement this with Appwrite document update API
+    setCurrentUser((prev) => ({ ...prev, ...updates }));
     toast({
       title: "Profile updated",
       description: "Your profile has been updated successfully.",
     });
-    
-    // Also update in our mock data
-    const userIndex = mockUsers.findIndex(u => u.id === currentUser.id);
-    if (userIndex !== -1) {
-      mockUsers[userIndex] = { 
-        ...mockUsers[userIndex],
-        ...updates
-      };
-    }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      currentUser, 
-      login, 
-      signup, 
-      logout, 
-      updateProfile,
-      isAuthenticated: !!currentUser,
-      loading 
-    }}>
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        login,
+        signup,
+        logout,
+        updateProfile,
+        isAuthenticated: !!currentUser,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -133,8 +112,8 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
