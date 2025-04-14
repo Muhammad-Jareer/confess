@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { createUser, signIn, signOutUser, getCurrentUser } from "@/lib/appwrite"; // adjust path as needed
+import { createUser, signIn, signOutUser, getCurrentUser, updateUserDocument } from "@/lib/appwrite"; 
 
 const AuthContext = createContext();
 
@@ -85,12 +85,30 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateProfile = async (updates) => {
-    // You can later implement this with Appwrite document update API
-    setCurrentUser((prev) => ({ ...prev, ...updates }));
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been updated successfully.",
-    });
+    try {
+      // Ensure currentUser and its document id ($id) exist
+      if (!currentUser || !currentUser.$id) {
+        throw new Error("No current user document id found");
+      }
+  
+      // Update the user document in Appwrite
+      const updatedUser = await updateUserDocument(currentUser.$id, updates);
+  
+      // Update the local state with the new user data
+      setCurrentUser(updatedUser);
+  
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Update profile failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: error.message,
+      });
+    }
   };
 
   return (
